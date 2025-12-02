@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.venv_test/
+.env
+env/
+
+# Mac
+.DS_Store
+
+# Project Specific
+data/
+Data/
+models/
+reports/
+!reports/submission.txt
+

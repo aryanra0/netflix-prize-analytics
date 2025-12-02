@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Prize Analytics | Premium Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <span style="color: var(--accent);">NETFLIX</span> ANALYTICS
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="#overview">Overview</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#performance">Model Performance</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#analysis">Deep Dive</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#sandbox">Live Sandbox</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+
+        <!-- Header Section -->
+        <div class="row mb-5" id="overview">
+            <div class="col-12 text-center">
+                <h1 class="display-4 fw-bold">Machine Learning Pipeline Results</h1>
+                <p class="lead text-secondary">Interactive analysis of Collaborative Filtering and XGBoost models.</p>
+            </div>
+        </div>
+
+        <!-- KPI Cards (Simulated) -->
+        <div class="row mb-5 g-4">
+            <div class="col-md-3">
+                <div class="glass-card text-center">
+                    <h5 class="text-secondary text-uppercase fs-6">Total Ratings</h5>
+                    <h2 class="fw-bold">100M+</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center">
+                    <h5 class="text-secondary text-uppercase fs-6">Users</h5>
+                    <h2 class="fw-bold">480k</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center">
+                    <h5 class="text-secondary text-uppercase fs-6">Movies</h5>
+                    <h2 class="fw-bold">17.7k</h2>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card text-center">
+                    <h5 class="text-secondary text-uppercase fs-6">Best RMSE</h5>
+                    <h2 class="fw-bold text-accent">0.9512</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Model Comparison & Feature Importance -->
+        <div class="row mb-5 g-4" id="performance">
+            <div class="col-lg-6">
+                <div class="glass-card h-100">
+                    <h4 class="mb-4">Model Comparison (RMSE)</h4>
+                    <div id="model-comparison-chart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card h-100">
+                    <h4 class="mb-4">XGBoost Feature Importance</h4>
+                    <div id="feature-importance-chart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Deep Dive Analysis -->
+        <div class="row mb-5 g-4" id="analysis">
+            <div class="col-lg-8">
+                <div class="glass-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4>Prediction Accuracy (Actual vs Predicted)</h4>
+                        <select class="form-select w-auto form-select-sm" id="dataset-filter">
+                            <option value="validation">Validation Set</option>
+                            <option value="test">Test Set (Simulated)</option>
+                        </select>
+                    </div>
+                    <div id="accuracy-scatter-chart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="glass-card h-100">
+                    <h4 class="mb-4">Error Distribution</h4>
+                    <div id="error-boxplot-chart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Temporal Trends -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="glass-card">
+                    <h4 class="mb-4">Average Rating Trends Over Time</h4>
+                    <div id="temporal-line-chart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Sandbox Section -->
+        <div class="row mb-5" id="sandbox">
+            <div class="col-lg-6 mx-auto">
+                <div class="glass-card">
+                    <h3 class="text-center mb-4">🚀 Live Prediction Sandbox</h3>
+                    <form id="prediction-form">
+                        <div class="mb-3">
+                            <label class="form-label">User ID</label>
+                            <input type="number" class="form-control" id="user-id" placeholder="e.g. 1488844" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Movie ID</label>
+                            <input type="number" class="form-control" id="movie-id" placeholder="e.g. 3" required>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label">Select Model</label>
+                            <select class="form-select" id="model-select">
+                                <option value="SVD">SVD (Matrix Factorization)</option>
+                                <option value="Baseline">Baseline (ALS)</option>
+                                <option value="XGBoost">XGBoost Regressor</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Generate Prediction</button>
+                    </form>
+                    <div id="prediction-result"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Dashboard Logic -->
+    <script>
+        // Common Plotly Layout Options for Dark Theme
+        const commonLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#a1a1aa' },
+            margin: { t: 30, b: 40, l: 60, r: 20 },
+            xaxis: { gridcolor: '#333' },
+            yaxis: { gridcolor: '#333' }
+        };
+
+        // 1. Fetch and Render Model Comparison
+        fetch('/api/metrics')
+            .then(res => res.json())
+            .then(data => {
+                const models = data.map(d => d.model);
+                const scores = data.map(d => d.rmse);
+
+                const trace = {
+                    x: models,
+                    y: scores,
+                    type: 'bar',
+                    marker: {
+                        color: scores.map(s => s < 1.0 ? '#e50914' : '#555'), // Highlight best models
+                    }
+                };
+
+                const layout = {
+                    ...commonLayout,
+                    title: '',
+                    yaxis: { ...commonLayout.yaxis, range: [0.8, 1.1], title: 'RMSE (Lower is Better)' }
+                };
+
+                Plotly.newPlot('model-comparison-chart', [trace], layout);
+            });
+
+        // 2. Fetch and Render Feature Importance
+        fetch('/api/features')
+            .then(res => res.json())
+            .then(data => {
+                // Sort for horizontal bar
+                data.sort((a, b) => a.importance - b.importance);
+
+                const trace = {
+                    x: data.map(d => d.importance),
+                    y: data.map(d => d.feature),
+                    type: 'bar',
+                    orientation: 'h',
+                    marker: { color: '#e50914' }
+                };
+
+                const layout = {
+                    ...commonLayout,
+                    margin: { ...commonLayout.margin, l: 150 } // More space for labels
+                };
+
+                Plotly.newPlot('feature-importance-chart', [trace], layout);
+            });
+
+        // 3. Fetch and Render Scatter Plot (Accuracy)
+        function loadScatter(dataset) {
+            fetch(`/api/accuracy?dataset=${dataset}`)
+                .then(res => res.json())
+                .then(data => {
+                    const trace = {
+                        x: data.map(d => d.actual),
+                        y: data.map(d => d.predicted),
+                        mode: 'markers',
+                        type: 'scatter',
+                        marker: {
+                            color: '#e50914',
+                            opacity: 0.5,
+                            size: 8
+                        }
+                    };
+
+                    // Add a perfect prediction line
+                    const lineTrace = {
+                        x: [1, 5],
+                        y: [1, 5],
+                        mode: 'lines',
+                        line: { color: '#fff', dash: 'dash' },
+                        name: 'Perfect Prediction'
+                    };
+
+                    const layout = {
+                        ...commonLayout,
+                        xaxis: { ...commonLayout.xaxis, title: 'Actual Rating', dtick: 1 },
+                        yaxis: { ...commonLayout.yaxis, title: 'Predicted Rating' },
+                        showlegend: false
+                    };
+
+                    Plotly.newPlot('accuracy-scatter-chart', [trace, lineTrace], layout);
+                });
+        }
+
+        // Initial load
+        loadScatter('validation');
+
+        // Filter change listener
+        document.getElementById('dataset-filter').addEventListener('change', (e) => {
+            loadScatter(e.target.value);
+        });
+
+        // 4. Fetch and Render Error Boxplot
+        fetch('/api/errors')
+            .then(res => res.json())
+            .then(data => {
+                const traces = [];
+                for (let i = 1; i <= 5; i++) {
+                    traces.push({
+                        y: data[i],
+                        type: 'box',
+                        name: `${i} Stars`,
+                        marker: { color: '#e50914' }
+                    });
+                }
+
+                const layout = {
+                    ...commonLayout,
+                    yaxis: { ...commonLayout.yaxis, title: 'Residual (Actual - Predicted)' }
+                };
+
+                Plotly.newPlot('error-boxplot-chart', traces, layout);
+            });
+
+        // 5. Fetch and Render Temporal Trends
+        fetch('/api/trends')
+            .then(res => res.json())
+            .then(data => {
+                const trace = {
+                    x: data.map(d => d.date),
+                    y: data.map(d => d.rating),
+                    type: 'scatter',
+                    mode: 'lines+markers',
+                    line: { color: '#e50914', width: 3 }
+                };
+
+                const layout = {
+                    ...commonLayout,
+                    yaxis: { ...commonLayout.yaxis, range: [3, 4.5], title: 'Avg Rating' }
+                };
+
+                Plotly.newPlot('temporal-line-chart', [trace], layout);
+            });
+
+        // 6. Live Prediction Sandbox Logic
+        document.getElementById('prediction-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const userId = document.getElementById('user-id').value;
+            const movieId = document.getElementById('movie-id').value;
+            const modelType = document.getElementById('model-select').value;
+            const resultDiv = document.getElementById('prediction-result');
+
+            // Show loading state
+            resultDiv.innerHTML = '<div class="text-center text-secondary">Running model inference...</div>';
+
+            fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, movie_id: movieId, model_type: modelType })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.error) {
+                        resultDiv.innerHTML = `<div class="alert alert-danger mt-3">${data.error}</div>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                        <div class="prediction-result-box">
+                            <div>${data.model} Predicted Rating</div>
+                            <div style="font-size: 2.5rem;">${data.prediction} <span style="font-size: 1rem;">/ 5.0</span></div>
+                        </div>
+                    `;
+                    }
+                })
+                .catch(err => {
+                    resultDiv.innerHTML = `<div class="alert alert-danger mt-3">API Error: ${err}</div>`;
+                });
+        });
+
+    </script>
+</body>
+
+</html>
